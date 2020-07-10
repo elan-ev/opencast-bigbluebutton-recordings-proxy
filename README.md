@@ -1,0 +1,1 @@
+# opencast-bigbluebutton-recordings-plugin
