@@ -75,7 +75,7 @@ type bbbImage struct {
 
 // makeBBBResponse creates a response like the BigBluebutton API endpoint /api/getRecordings,
 // see https://docs.bigbluebutton.org/dev/api.html#getrecordings.
-func makeBBBResponse(r *opencastSearchResult) *bbbRecordingsResponse {
+func (s *server) makeBBBResponse(r *opencastSearchResult) *bbbRecordingsResponse {
 
 	// Gather all preview images with postfix "/player+preview"
 	images := []bbbImage{}
@@ -112,7 +112,7 @@ func makeBBBResponse(r *opencastSearchResult) *bbbRecordingsResponse {
 						Format: []bbbFormat{
 							{
 								Type:    "opencast",
-								URL:     fmt.Sprintf("https://develop.opencast.org/play/%v", r.SearchResults.Result.Mediapackage.ID),
+								URL:     fmt.Sprintf("%v/play/%v", s.config.Opencast.URL, r.SearchResults.Result.Mediapackage.ID),
 								Preview: bbbPreview{Images: bbbImages{Image: images}},
 							},
 						},

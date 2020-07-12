@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -8,18 +9,19 @@ import (
 )
 
 func mainWithError() error {
-	config := &config{
-		OpencastURL: "https://develop.opencast.org",
-		Username:    "admin",
-		Password:    "opencast",
-		Address:     "127.0.0.1:8000",
+
+	// Read config
+	c, err := newConfig("config.yml")
+	if err != nil {
+		return fmt.Errorf("unable to get configuration, %w", err)
 	}
+	log.Println("Configuration file read")
 
 	s := server{
 		client: &http.Client{Timeout: 10 * time.Second},
-		config: config,
+		config: c,
 		srv: &http.Server{
-			Addr: config.Address,
+			Addr: c.Server.Address,
 		},
 	}
 	s.routes()

@@ -1,0 +1,17 @@
+---
+# opencast-bigbluebutton-recordings-plugin configuration file.
+
+# Opencast configuration
+opencast:
+  # Url of the opencast server.
+  # Not trailing slashes allowed.
+  url: "https://develop.opencast.org"
+
+  # Username and password to authorize against the opencast server.
+  username: "admin"
+  password: "opencast"
+
+# Server Configuration
+server:
+  # Address the server is listen to.
+  address: "127.0.0.1:8000"

@@ -9,13 +9,6 @@ import (
 	"time"
 )
 
-type config struct {
-	OpencastURL string
-	Username    string
-	Password    string
-	Address     string
-}
-
 type server struct {
 	client *http.Client
 	config *config
@@ -67,7 +60,7 @@ func (s *server) proxyBBBRecordings() http.HandlerFunc {
 			return
 		}
 
-		result, err := xml.Marshal(makeBBBResponse(opencastResult))
+		result, err := xml.Marshal(s.makeBBBResponse(opencastResult))
 		if err != nil {
 			s.responseError(w,
 				fmt.Errorf("unable to marshal bbb response as xml, %w", err),

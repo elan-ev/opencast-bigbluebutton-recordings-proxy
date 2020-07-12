@@ -69,13 +69,13 @@ func (omas *opencastMediaPackageAttachments) UnmarshalJSON(b []byte) error {
 
 func (s *server) getOpencastResult(ctx context.Context, id string) (*opencastSearchResult, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet,
-		fmt.Sprintf("%v/search/episode.json?id=%v", s.config.OpencastURL, id), nil)
+		fmt.Sprintf("%v/search/episode.json?id=%v", s.config.Opencast.URL, id), nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create opencast request, %w", err)
 	}
 
-	if s.config.Username != "" && s.config.Password != "" {
-		request.SetBasicAuth(s.config.Username, s.config.Password)
+	if s.config.Opencast.Username != "" && s.config.Opencast.Password != "" {
+		request.SetBasicAuth(s.config.Opencast.Username, s.config.Opencast.Password)
 	}
 
 	request.Header.Set("content-type", "application/json")

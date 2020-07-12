@@ -2,4 +2,4 @@ module github.com/elanev/opencast-bigbluebutton-recordings-plugin
 
 go 1.14
 
-require github.com/gorilla/mux v1.7.4
+require gopkg.in/yaml.v2 v2.3.0
