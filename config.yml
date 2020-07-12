@@ -11,6 +11,12 @@ opencast:
   username: "admin"
   password: "opencast"
 
+  # Time after which the cache entries expire.
+  cache_expiration: "1m"
+
+  # Time after which a request is considered as failed.
+  request_timeout: "10s"
+
 # Server Configuration
 server:
   # Address the server is listen to.

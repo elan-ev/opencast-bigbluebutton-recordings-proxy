@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 func mainWithError() error {
@@ -18,11 +17,11 @@ func mainWithError() error {
 	log.Println("Configuration file read")
 
 	s := server{
-		client: &http.Client{Timeout: 10 * time.Second},
 		config: c,
 		srv: &http.Server{
 			Addr: c.Server.Address,
 		},
+		opencast: newOpencastInMemory(c),
 	}
 	s.routes()
 	return s.srv.ListenAndServe()

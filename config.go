@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -10,9 +11,11 @@ import (
 // config represents the configuration
 type config struct {
 	Opencast struct {
-		URL      string `yaml:"url"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
+		URL             string        `yaml:"url"`
+		Username        string        `yaml:"username"`
+		Password        string        `yaml:"password"`
+		CacheExpiration time.Duration `yaml:"cache_expiration"`
+		RequestTimeout  time.Duration `yaml:"request_timeout"`
 	} `yaml:"opencast"`
 
 	Server struct {

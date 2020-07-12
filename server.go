@@ -9,10 +9,11 @@ import (
 	"time"
 )
 
+// server is the struct representing the http server.
 type server struct {
-	client *http.Client
-	config *config
-	srv    *http.Server
+	opencast opencast
+	config   *config
+	srv      *http.Server
 }
 
 func (s *server) logRequest(h http.HandlerFunc) http.HandlerFunc {
@@ -47,7 +48,8 @@ func (s *server) proxyBBBRecordings() http.HandlerFunc {
 			return
 		}
 
-		opencastResult, err := s.getOpencastResult(r.Context(), id)
+		// Get result from opencast interface
+		opencastResult, err := s.opencast.getOpencastResult(r.Context(), id)
 		if err != nil {
 			s.responseError(w,
 				fmt.Errorf("unable to get opencast result, %w", err),
