@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"regexp"
 )
 
 type bbbRecordingsResponse struct {
@@ -72,7 +73,20 @@ type bbbImage struct {
 	Width  string `xml:"width,attr"`
 }
 
+// makeBBBResponse creates a response like the BigBluebutton API endpoint /api/getRecordings,
+// see https://docs.bigbluebutton.org/dev/api.html#getrecordings.
 func makeBBBResponse(r *opencastSearchResult) *bbbRecordingsResponse {
+
+	// Gather all preview images with postfix "/player+preview"
+	images := []bbbImage{}
+	regex := regexp.MustCompile(`.+/player\+preview`)
+	for _, attachement := range r.SearchResults.Result.Mediapackage.Attachments.Attachment {
+		if regex.Match([]byte(attachement.Type)) {
+			images = append(images, bbbImage{Text: attachement.URL})
+		}
+	}
+
+	// Create Response
 	return &bbbRecordingsResponse{
 		Returncode: "SUCCESS",
 		Recordings: bbbRecordings{
@@ -97,17 +111,9 @@ func makeBBBResponse(r *opencastSearchResult) *bbbRecordingsResponse {
 					Playback: bbbPlayback{
 						Format: []bbbFormat{
 							{
-								Type: "opencast",
-								URL:  fmt.Sprintf("https://develop.opencast.org/play/%v", r.SearchResults.Result.Mediapackage.ID),
-								Preview: bbbPreview{
-									Images: bbbImages{
-										Image: []bbbImage{
-											{
-												Text: r.SearchResults.Result.Mediapackage.Attachments.Attachment[0].URL,
-											},
-										},
-									},
-								},
+								Type:    "opencast",
+								URL:     fmt.Sprintf("https://develop.opencast.org/play/%v", r.SearchResults.Result.Mediapackage.ID),
+								Preview: bbbPreview{Images: bbbImages{Image: images}},
 							},
 						},
 					},
@@ -115,4 +121,5 @@ func makeBBBResponse(r *opencastSearchResult) *bbbRecordingsResponse {
 			},
 		},
 	}
+
 }
