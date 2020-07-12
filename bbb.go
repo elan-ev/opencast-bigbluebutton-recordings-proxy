@@ -73,9 +73,7 @@ type bbbImage struct {
 	Width  string `xml:"width,attr"`
 }
 
-// makeBBBResponse creates a response like the BigBluebutton API endpoint /api/getRecordings,
-// see https://docs.bigbluebutton.org/dev/api.html#getrecordings.
-func (s *server) makeBBBResponse(r *opencastSearchResult) *bbbRecordingsResponse {
+func (s *server) makeBBBRecording(r *opencastSearchResult) bbbRecording {
 
 	// Gather all preview images with postfix "/player+preview"
 	images := []bbbImage{}
@@ -86,40 +84,49 @@ func (s *server) makeBBBResponse(r *opencastSearchResult) *bbbRecordingsResponse
 		}
 	}
 
-	// Create Response
-	return &bbbRecordingsResponse{
-		Returncode: "SUCCESS",
-		Recordings: bbbRecordings{
-			Recording: []bbbRecording{
+	return bbbRecording{
+		RecordID:          r.SearchResults.Result.Mediapackage.ID,
+		MeetingID:         r.SearchResults.Result.Mediapackage.ID,
+		InternalMeetingID: r.SearchResults.Result.Mediapackage.ID,
+		Name:              r.SearchResults.Result.Mediapackage.Title,
+		IsBreakout:        false,
+		Published:         false,
+		State:             "published",
+		StartTime:         r.SearchResults.Result.Mediapackage.Start.Unix(),
+		EndTime:           r.SearchResults.Result.Mediapackage.Start.Unix() + int64(r.SearchResults.Result.Mediapackage.Duration),
+		Participants:      3,
+		Metadata: bbbMetadata{
+			IsBreakout:  false,
+			GlListed:    false,
+			MeetingName: r.SearchResults.Result.Mediapackage.Title,
+			MeetingID:   r.SearchResults.Result.Mediapackage.ID,
+		},
+		Playback: bbbPlayback{
+			Format: []bbbFormat{
 				{
-					RecordID:          r.SearchResults.Result.Mediapackage.ID,
-					MeetingID:         r.SearchResults.Result.Mediapackage.ID,
-					InternalMeetingID: r.SearchResults.Result.Mediapackage.ID,
-					Name:              r.SearchResults.Result.Mediapackage.Title,
-					IsBreakout:        false,
-					Published:         false,
-					State:             "published",
-					StartTime:         r.SearchResults.Result.Mediapackage.Start.Unix(),
-					EndTime:           r.SearchResults.Result.Mediapackage.Start.Unix() + int64(r.SearchResults.Result.Mediapackage.Duration),
-					Participants:      3,
-					Metadata: bbbMetadata{
-						IsBreakout:  false,
-						GlListed:    false,
-						MeetingName: r.SearchResults.Result.Mediapackage.Title,
-						MeetingID:   r.SearchResults.Result.Mediapackage.ID,
-					},
-					Playback: bbbPlayback{
-						Format: []bbbFormat{
-							{
-								Type:    "opencast",
-								URL:     fmt.Sprintf("%v/play/%v", s.config.Opencast.URL, r.SearchResults.Result.Mediapackage.ID),
-								Preview: bbbPreview{Images: bbbImages{Image: images}},
-							},
-						},
-					},
+					Type:    "opencast",
+					URL:     fmt.Sprintf("%v/play/%v", s.config.Opencast.URL, r.SearchResults.Result.Mediapackage.ID),
+					Preview: bbbPreview{Images: bbbImages{Image: images}},
 				},
 			},
 		},
 	}
+}
 
+// makeBBBResponse creates a response like the BigBluebutton API endpoint /api/getRecordings,
+// see https://docs.bigbluebutton.org/dev/api.html#getrecordings.
+func (s *server) makeBBBResponse(rs []*opencastSearchResult) *bbbRecordingsResponse {
+
+	// Get recordings
+	recordings := []bbbRecording{}
+	for _, r := range rs {
+		recordings = append(recordings, s.makeBBBRecording(r))
+
+	}
+
+	// Create Response
+	return &bbbRecordingsResponse{
+		Returncode: "SUCCESS",
+		Recordings: bbbRecordings{Recording: recordings},
+	}
 }

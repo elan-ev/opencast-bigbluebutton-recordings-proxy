@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -36,11 +37,11 @@ func (s *server) proxyBBBRecordings() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		recordID := r.FormValue("recordID")
 		meetingID := r.FormValue("meetingID")
-		var id string
+		var ids []string
 		if recordID != "" {
-			id = recordID
+			ids = strings.Split(recordID, ",")
 		} else if meetingID != "" {
-			id = meetingID
+			ids = strings.Split(meetingID, ",")
 		} else {
 			s.responseError(w,
 				errors.New("unable to get all recordings, this is not implemented"),
@@ -48,21 +49,26 @@ func (s *server) proxyBBBRecordings() http.HandlerFunc {
 			return
 		}
 
-		// Get result from opencast interface
-		opencastResult, err := s.opencast.getOpencastResult(r.Context(), id)
-		if err != nil {
-			s.responseError(w,
-				fmt.Errorf("unable to get opencast result, %w", err),
-				"", http.StatusInternalServerError)
-			return
+		opencastResults := []*opencastSearchResult{}
+		for _, id := range ids {
+			// Get result from opencast interface
+			opencastResult, err := s.opencast.getOpencastResult(r.Context(), id)
+			if err != nil {
+				s.responseError(w,
+					fmt.Errorf("unable to get opencast result, %w", err),
+					"", http.StatusBadRequest)
+				return
+			}
+			if opencastResult.SearchResults.Total == 0 {
+				s.responseError(w, nil, "not found", http.StatusNotFound)
+				return
+			}
+
+			opencastResults = append(opencastResults, opencastResult)
+
 		}
 
-		if opencastResult.SearchResults.Total == 0 {
-			s.responseError(w, nil, "not found", http.StatusNotFound)
-			return
-		}
-
-		result, err := xml.Marshal(s.makeBBBResponse(opencastResult))
+		result, err := xml.Marshal(s.makeBBBResponse(opencastResults))
 		if err != nil {
 			s.responseError(w,
 				fmt.Errorf("unable to marshal bbb response as xml, %w", err),
