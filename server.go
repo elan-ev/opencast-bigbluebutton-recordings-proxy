@@ -60,8 +60,8 @@ func (s *server) proxyBBBRecordings() http.HandlerFunc {
 				return
 			}
 			if opencastResult.SearchResults.Total == 0 {
-				s.responseError(w, nil, "not found", http.StatusNotFound)
-				return
+				log.Printf("Recording with id %v not found", id)
+				continue
 			}
 
 			opencastResults = append(opencastResults, opencastResult)
