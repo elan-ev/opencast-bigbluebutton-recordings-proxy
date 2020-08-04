@@ -8,7 +8,7 @@ func (s *server) routes() {
 	router := http.NewServeMux()
 
 	router.HandleFunc(
-		"/api/getRecordings",
+		"/bigbluebutton/api/getRecordings",
 		s.logRequest(s.proxyBBBRecordings()),
 	)
 
