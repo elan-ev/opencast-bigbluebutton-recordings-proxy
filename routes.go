@@ -9,7 +9,11 @@ func (s *server) routes() {
 
 	router.HandleFunc(
 		"/bigbluebutton/api/getRecordings",
-		s.logRequest(s.proxyBBBRecordings()),
+		s.logRequest(
+			s.verifyBBBChecksum(
+				s.proxyBBBRecordings(),
+			),
+		),
 	)
 
 	// Set router to srv handler

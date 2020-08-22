@@ -17,6 +17,13 @@ opencast:
   # Time after which a request is considered as failed.
   request_timeout: "10s"
 
+# BigBlueButton configuration
+bigbluebutton:
+  # BigBlueButton Secret. If empty, security is disabled.
+  # For more information, take a look at
+  # https://docs.bigbluebutton.org/dev/api.html#api-security-model
+  secret:
+
 # Server Configuration
 server:
   # Address the server is listen to.

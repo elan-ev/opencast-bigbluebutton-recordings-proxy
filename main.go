@@ -15,6 +15,9 @@ func mainWithError() error {
 		return fmt.Errorf("unable to get configuration, %w", err)
 	}
 	log.Println("Configuration file read")
+	if c.BigBlueButton.Secret == "" {
+		log.Println("BigBlueButton security disabled.")
+	}
 
 	s := server{
 		config: c,

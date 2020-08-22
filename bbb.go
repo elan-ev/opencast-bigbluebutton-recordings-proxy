@@ -1,10 +1,20 @@
 package main
 
 import (
+	"crypto/sha1"
 	"encoding/xml"
 	"fmt"
+	"io"
+	"net/http"
 	"regexp"
+	"strings"
 )
+
+const checksumError = `<response>
+<returncode>FAILED</returncode>
+<messageKey>checksumError</messageKey>
+<message>You did not pass the checksum security check</message>
+</response>`
 
 type bbbRecordingsResponse struct {
 	XMLName    xml.Name      `xml:"response"`
@@ -129,4 +139,67 @@ func (s *server) makeBBBResponse(rs []*opencastSearchResult) *bbbRecordingsRespo
 		Returncode: "SUCCESS",
 		Recordings: bbbRecordings{Recording: recordings},
 	}
+}
+
+// verifyBBBChecksum is a middleware to verify the checksum.
+// For more details about what has to be done here, take a look at
+// https://docs.bigbluebutton.org/dev/api.html#api-security-model.
+func (s *server) verifyBBBChecksum(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		// If the secret is empty, disable checksum verification
+		if s.config.BigBlueButton.Secret == "" {
+			h(w, r)
+			return
+		}
+
+		// Create sha1
+		hash := sha1.New()
+
+		// Add api part to hash
+		splittedURL := strings.Split(r.URL.Path, "/")
+		if len(splittedURL) < 1 {
+			s.responseError(w, fmt.Errorf("unable to split url path, %v", r.URL.Path),
+				"", http.StatusInternalServerError)
+			return
+		}
+		_, err := io.WriteString(hash, splittedURL[len(splittedURL)-1])
+		if err != nil {
+			s.responseError(w, fmt.Errorf("unable to add API part to sha1 hash, %v", err),
+				"", http.StatusInternalServerError)
+			return
+		}
+
+		// Add query without checksum to hash
+		reg := regexp.MustCompile("(&checksum=[a-z0-9]+$|checksum=[a-z0-9]+&)")
+		_, err = io.WriteString(hash, reg.ReplaceAllString(r.URL.RawQuery, ""))
+		if err != nil {
+			s.responseError(w, fmt.Errorf("unable to add query part to sha1 hash, %v", err),
+				"", http.StatusInternalServerError)
+			return
+		}
+
+		// Get BBB secret
+		_, err = io.WriteString(hash, s.config.BigBlueButton.Secret)
+		if err != nil {
+			s.responseError(w, fmt.Errorf("unable to add secret part to sha1 hash, %v", err),
+				"", http.StatusInternalServerError)
+			return
+		}
+
+		// Compare hashes
+		wanted := fmt.Sprintf("%x", string(hash.Sum(nil)))
+		got := r.URL.Query().Get("checksum")
+		if wanted != got {
+			w.Header().Set("Content-Type", "application/xml")
+			s.responseError(w, fmt.Errorf("wrong hash, wanted='%v', got=%v", wanted, got),
+				checksumError,
+				http.StatusBadRequest)
+			return
+		}
+
+		// Checksum is verified properly, call the next handler.
+		h(w, r)
+	}
+
 }
