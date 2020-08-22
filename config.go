@@ -18,9 +18,13 @@ type config struct {
 		RequestTimeout  time.Duration `yaml:"request_timeout"`
 	} `yaml:"opencast"`
 
+	BigBlueButton struct {
+		Secret string `yaml:"secret"`
+	} `yaml:"bigbluebutton"`
+
 	Server struct {
 		Address string `yaml:"address"`
-	}
+	} `yaml:"server"`
 }
 
 // newConfig reads in a file and create a new configuration with its content.
