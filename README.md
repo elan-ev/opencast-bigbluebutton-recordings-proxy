@@ -14,23 +14,25 @@ https://github.com/elan-ev/opencast-bigbluebutton-integration/tree/master/post-p
 
 ## Build
 
-To install the plugin, clone the repository onto your BigBlueButton-Server 
-and run the commands below. You will need [Golang](https://golang.org/) to build successfully.
+To install the plugin, clone the repository and run the commands below. 
+You will need [Golang](https://golang.org/) to build successfully.
+After building successfully, copy the GO binarys to the BBB server.
 
 ```
 go mod download
 go build
 ```
 
-Note: It is recommended to install Golang from an official archive at https://golang.org/doc/install,
-as the current debian package does not include the `mod` command.
+Note: When building on debian or derivatives, it is recommended to install Golang from the 
+official archive at https://golang.org/doc/install,
+as current packages are liable to be outdated.
 
 ## Configuration
 
 Configuration of the plugin is done via the configuration file `config.yml`, which should be self-explanatory.
 The file is read from the directory the service is started from.
 
-Furthermore, the proxy server needs to configured so that it redirects API calls to the plugin.
+Furthermore, the proxy server needs to configured so that it redirects API calls from the plugin.
 Add the statement below to `/etc/nginx/sites-available/bigbluebutton`.
 
 ```
