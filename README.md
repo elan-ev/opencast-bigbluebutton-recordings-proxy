@@ -1,7 +1,7 @@
 # opencast-bigbluebutton-recordings-plugin
 
 This plugin serves BigBlueButton frontends recordings from an Opencast instead of the actual
-BigBlueButton. It does this by redirecting calls to the BBB-API `/bigbluebutton/api/getRecordings`
+BigBlueButton. It does this by redirecting calls from the BBB-API `/bigbluebutton/api/getRecordings`
 to the Opencast API. This allows to create recordings BBB recordings to be hosted in Opencast
 and have them still show up in BBB frontends, without requiring any changes to the said
 frontends. 
